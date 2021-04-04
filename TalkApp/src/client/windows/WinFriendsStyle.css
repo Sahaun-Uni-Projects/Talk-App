@@ -1,0 +1,50 @@
+.scroll-pane {
+    -fx-background: #36393f;
+}
+
+.text-field {
+    -fx-background-color: transparent;
+    -fx-border-color:  transparent transparent white transparent;
+    -fx-text-fill: #eeeeee;
+    -fx-text-color: #eeeeee;
+}
+
+.button {
+    -fx-background-color: transparent;
+    -fx-border-color: #eeeeee;
+    -fx-text-fill: #eeeeee;
+}
+
+.button:hover {
+    -fx-background-color: #eeeeee;
+    -fx-border-color: #36393f;
+    -fx-text-fill: #36393f;
+    
+    -fx-cursor: hand;
+}
+
+.button:pressed {
+    -fx-background-color: #dddddd;
+    -fx-border-color: #36393f;
+    -fx-text-fill: #36393f;
+}
+
+#btnAdd {
+    -fx-background-color: transparent;
+    -fx-border-color: #77ff99;
+    -fx-text-fill: #77ff99;
+}
+
+#btnAdd:hover {
+    -fx-background-color: #77ff99;
+    -fx-border-color: #36393f;
+    -fx-text-fill: #36393f;
+    
+    -fx-cursor: hand;
+}
+
+#btnAdd:pressed {
+    -fx-background-color: #22cc44;
+    -fx-border-color: #36393f;
+    -fx-text-fill: #36393f;
+}

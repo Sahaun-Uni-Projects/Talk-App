@@ -1,0 +1,8 @@
+TalkApp/nbproject/private/
+TalkApp/nbproject/Makefile-*.mk
+TalkApp/nbproject/Package-*.bash
+build/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/

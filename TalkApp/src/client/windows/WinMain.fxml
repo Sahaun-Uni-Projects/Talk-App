@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane id="AnchorPane" prefHeight="720.0" prefWidth="960.0" style="-fx-background-color: #36393f;" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.windows.WinMainController">
+   <stylesheets>
+        <URL value="@WinMainStyle.css" />
+    </stylesheets>
+    <children>
+      <HBox prefHeight="720.0" prefWidth="960.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <AnchorPane prefHeight="720.0" prefWidth="30.0" style="-fx-background-color: #202225;">
+               <children>
+                  <Button fx:id="btnProfile" alignment="CENTER" contentDisplay="CENTER" layoutY="12.0" mnemonicParsing="false" onAction="#btnProfileAction">
+                     <graphic>
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../res/sys_images/button_profile.png" />
+                           </image>
+                        </ImageView>
+                     </graphic></Button>
+                  <Button fx:id="btnFriends" alignment="CENTER" contentDisplay="CENTER" layoutY="70.0" mnemonicParsing="false" onAction="#btnFriendsAction">
+                     <graphic>
+                        <ImageView fitHeight="32.0" fitWidth="32.0" pickOnBounds="true" preserveRatio="true">
+                           <image>
+                              <Image url="@../res/sys_images/button_friends.png" />
+                           </image>
+                        </ImageView>
+                     </graphic></Button>
+                  <Button id="btnLogout" fx:id="btnLogout" layoutX="9.0" layoutY="674.0" mnemonicParsing="false" onAction="#btnLogoutAction" prefHeight="19.0" prefWidth="32.0" text="&lt;">
+                     <font>
+                        <Font size="14.0" />
+                     </font></Button>
+               </children>
+            </AnchorPane>
+            <VBox>
+               <children>
+                  <ScrollPane cacheShape="false" centerShape="false" focusTraversable="false" hbarPolicy="NEVER" prefHeight="720.0" prefWidth="285.0" scaleShape="false" style="-fx-background: #2f3136;" styleClass="edge-to-edge">
+                     <content>
+                        <VBox fx:id="vbUserList">
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </VBox>
+                     </content>
+                  </ScrollPane>
+                  <HBox alignment="CENTER_LEFT" prefHeight="92.0" prefWidth="285.0" style="-fx-background-color: #292b2f;">
+                     <children>
+                        <ImageView fx:id="imgUserDP" fitHeight="50.0" fitWidth="50.0" pickOnBounds="true" preserveRatio="true" smooth="false">
+                           <image>
+                              <Image url="@../res/user_images/ohyeah.png" />
+                           </image>
+                           <HBox.margin>
+                              <Insets bottom="5.0" left="5.0" top="5.0" />
+                           </HBox.margin>
+                        </ImageView>
+                        <Text fx:id="txtUsername" fill="#eeeeee" strokeType="OUTSIDE" strokeWidth="0.0" text="Username">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                           <font>
+                              <Font size="17.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+            <VBox fx:id="vbChat" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="720.0" prefWidth="625.0">
+               <children>
+                  <HBox fx:id="hbToUser" alignment="CENTER_LEFT" style="-fx-background-color: #292b2f;">
+                     <children>
+                        <Text fill="#eeeeee" strokeType="OUTSIDE" strokeWidth="0.0" text="\@">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                        </Text>
+                        <Text fx:id="txtToUsername" fill="#eeeeee" strokeType="OUTSIDE" strokeWidth="0.0" text="Username">
+                           <font>
+                              <Font size="18.0" />
+                           </font>
+                           <HBox.margin>
+                              <Insets bottom="10.0" left="10.0" top="10.0" />
+                           </HBox.margin>
+                        </Text>
+                        <Text fx:id="txtToUserFullName" fill="#eeeeee" strokeType="OUTSIDE" strokeWidth="0.0" text="(Full Name Here)">
+                           <HBox.margin>
+                              <Insets left="10.0" />
+                           </HBox.margin>
+                           <font>
+                              <Font size="14.0" />
+                           </font>
+                        </Text>
+                     </children>
+                  </HBox>
+                  <ScrollPane fx:id="spConversation" hbarPolicy="NEVER" prefHeight="625.0" style="-fx-background: #36393f;" styleClass="edge-to-edge">
+                     <content>
+                        <VBox fx:id="vbConversation" prefHeight="561.0" prefWidth="626.0" />
+                     </content>
+                  </ScrollPane>
+                  <HBox maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="51.0" prefWidth="601.0">
+                     <children>
+                        <TextArea fx:id="taMessage" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" prefHeight="51.0" prefWidth="601.0" promptText="Type your message here..." stylesheets="@WinMainStyle.css" wrapText="true" HBox.hgrow="NEVER">
+                           <font>
+                              <Font size="14.0" />
+                           </font></TextArea>
+                        <Button id="btnSend" fx:id="btnSend" alignment="CENTER" contentDisplay="CENTER" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#btnSendAction" prefHeight="51.0" prefWidth="71.0" text="Send">
+                           <HBox.margin>
+                              <Insets right="1.0" />
+                           </HBox.margin></Button>
+                     </children>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</AnchorPane>

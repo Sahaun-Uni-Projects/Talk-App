@@ -1,0 +1,33 @@
+.text-field {
+    -fx-background-color: transparent;
+    -fx-border-color:  transparent transparent white transparent;
+    -fx-text-fill: #eeeeee;
+    -fx-text-color: #eeeeee;
+}
+
+.password-field {
+    -fx-background-color: transparent;
+    -fx-border-color:  transparent transparent white transparent;
+    -fx-text-fill: #eeeeee;
+    -fx-text-color: #eeeeee;
+}
+
+.button {
+    -fx-background-color: transparent;
+    -fx-border-color: #eeeeee;
+    -fx-text-fill: #eeeeee;
+}
+
+.button:hover {
+    -fx-background-color: #eeeeee;
+    -fx-border-color: #36393f;
+    -fx-text-fill: #36393f;
+    
+    -fx-cursor: hand;
+}
+
+.button:pressed {
+    -fx-background-color: #dddddd;
+    -fx-border-color: #36393f;
+    -fx-text-fill: #36393f;
+}

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane id="AnchorPane" prefHeight="720.0" prefWidth="960.0" style="-fx-background-color: #202225;" xmlns="http://javafx.com/javafx/15.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="client.windows.WinSignupController">
+    <stylesheets>
+        <URL value="@WinSignupStyle.css" />
+    </stylesheets>
+    <children>
+      <AnchorPane layoutX="240.0" layoutY="55.0" prefHeight="610.0" prefWidth="480.0" style="-fx-background-color: #36393f;">
+         <children>
+            <Text fill="#eeeeee" layoutX="118.0" layoutY="83.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Welcome!">
+               <font>
+                  <Font size="55.0" />
+               </font>
+            </Text>
+            <Label layoutX="98.0" layoutY="211.0" text="Name" textFill="#eeeeee">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="fieldName" layoutX="170.0" layoutY="205.0" prefHeight="25.0" prefWidth="247.0">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </TextField>
+            <Label layoutX="67.0" layoutY="295.0" text="Username" textFill="#eeeeee">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <TextField fx:id="fieldUser" layoutX="170.0" layoutY="289.0" prefHeight="25.0" prefWidth="247.0">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </TextField>
+            <Label layoutX="73.0" layoutY="383.0" prefHeight="27.0" prefWidth="75.0" text="Password" textFill="#eeeeee">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <PasswordField fx:id="fieldPass" layoutX="169.0" layoutY="377.0" prefHeight="25.0" prefWidth="247.0">
+               <font>
+                  <Font size="16.0" />
+               </font>
+            </PasswordField>
+            <Button fx:id="btnConfirm" layoutX="192.0" layoutY="548.0" mnemonicParsing="false" onAction="#btnConfirmAction" prefHeight="32.0" prefWidth="94.0" text="Confirm">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Button>
+            <Text fx:id="txtWarningName" fill="#ff3434" layoutX="136.0" layoutY="274.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Name must be between 3-50 characters" textAlignment="CENTER" />
+            <Text fx:id="txtWarningUser" fill="#ff3434" layoutX="126.0" layoutY="357.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Username must be between 3-50 characters" textAlignment="CENTER" />
+            <Text fx:id="txtWarningPass" fill="#ff3434" layoutX="169.0" layoutY="441.0" strokeType="OUTSIDE" strokeWidth="0.0" text="Password can not be empty" textAlignment="CENTER" />
+            <Button fx:id="btnBack" layoutX="14.0" layoutY="564.0" mnemonicParsing="false" onAction="#btnBackAction" prefHeight="32.0" prefWidth="19.0" text="&lt;">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Button>
+            <Label layoutX="46.0" layoutY="468.0" prefHeight="27.0" prefWidth="104.0" text="Date of Birth" textFill="#eeeeee">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <DatePicker fx:id="dpBirthday" editable="false" layoutX="170.0" layoutY="468.0" prefHeight="27.0" prefWidth="247.0" style="-fx-background-color: #36393f;" />
+            <Label layoutX="28.0" layoutY="142.0" prefHeight="27.0" prefWidth="122.0" text="Display Picture" textFill="#eeeeee">
+               <font>
+                  <Font size="18.0" />
+               </font>
+            </Label>
+            <ImageView fx:id="imgPicture" fitHeight="64.0" fitWidth="64.0" layoutX="160.0" layoutY="124.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@../res/user_images/default.png" />
+               </image>
+            </ImageView>
+            <Button fx:id="btnChoose" layoutX="361.0" layoutY="145.0" mnemonicParsing="false" onAction="#btnChooseAction" text="Choose" />
+            <Label fx:id="labelPicturePath" layoutX="231.0" layoutY="150.0" prefHeight="17.0" prefWidth="122.0" text="default.png" textFill="#eeeeee" />
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
