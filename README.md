@@ -42,7 +42,7 @@ To use the program, you need to:
 - Run <a href="https://github.com/sohomsahaun/Talk-App/blob/main/TalkApp/src/server/ServerMain.java">ServerMain.java</a>
 - Run <a href="https://github.com/sohomsahaun/Talk-App/blob/main/TalkApp/src/client/ClientMain.java">ClientMain.java</a> (for each window)
 
-You can change the server name and port in <a href="https://github.com/sohomsahaun/Talk-App/blob/6927dc7e53fdf5162a48cec874e9a702bcc38c84/TalkApp/src/utils/MACRO.java">MACRO.java</a>
+You can change the server name and port in <a href="https://github.com/sohomsahaun/Talk-App/blob/main/TalkApp/src/utils/MACRO.java">MACRO.java</a>
 
 &nbsp;
 
