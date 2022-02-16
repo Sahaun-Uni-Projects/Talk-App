@@ -145,10 +145,10 @@ public class ServerWorker extends Thread {
     }
     
     private void handleMessage(String[] args) throws IOException {
-        String id = args[0];
+        int id = Integer.valueOf(args[0]);
         Message message = db.getMessage(id);
         
-        ArrayList<String> participants = Message.getConversationUsers(message.getConversation());
+        ArrayList<String> participants = this.db.getConversationUsers(message.getConversation());
         
         ArrayList<ServerWorker> workers = this.server.getWorkersList();
         for (ServerWorker worker : workers) {

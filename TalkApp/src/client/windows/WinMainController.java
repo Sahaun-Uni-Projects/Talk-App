@@ -38,7 +38,7 @@ import utils.WINDOW;
  * @author Sahaun
  */
 public class WinMainController extends FXMLController {
-    private String currentConversation = "";
+    private int currentConversation = -1;
     
     @FXML private Text txtToUserFullName;
     @FXML private Text txtToUsername;
@@ -91,6 +91,28 @@ public class WinMainController extends FXMLController {
         imgUserDP.setImage(getImage(user.getPicture()));
         txtUsername.setText(user.getUsername());
         
+        ArrayList<String> friendsList = user.getFriendsList();
+        for (String name : friendsList) {
+            User friend = this.client.getUserByName(name);
+            if (friend != null) {
+                int conversation = this.client.getConversationId(user.getUsername(), friend.getUsername());
+                //boolean unread = this.client.conversationIsUnread(conversation);
+                //if (this.currentConversation.equals(conversation)) unread = false;
+                loadUserPreview(friend, false);
+            }
+        }
+        
+        // Auto scroll down scroll pane when vbox height changes
+        vbConversation.heightProperty().addListener(new ChangeListener() {
+            @Override
+            public void changed(ObservableValue observable, Object oldvalue, Object newValue) {
+                spConversation.setVvalue((Double)newValue);  
+            }
+        });
+        
+        // Open current conversation
+        if (this.currentConversation != -1) openConversation(this.currentConversation);
+        
         /*ArrayList<String> friendsList = new ArrayList<>();
         Set keys = user.getLastSeen().keySet();
         for (Object key : keys) {
@@ -105,36 +127,17 @@ public class WinMainController extends FXMLController {
         
         Collections.sort(friendsList);
         
-        for (String name : friendsList) {
-            User friend = this.client.getUserByName(name);
-            if (friend != null) {
-                String conversation = Message.getConversationId(user.getUsername(), friend.getUsername());
-                boolean unread = this.client.conversationIsUnread(conversation);
-                if (this.currentConversation.equals(conversation)) unread = false;
-                loadUserPreview(friend, unread);
-            }
-        }
-        
-        // Auto scroll down scroll pane when vbox height changes
-        vbConversation.heightProperty().addListener(new ChangeListener() {
-            @Override
-            public void changed(ObservableValue observable, Object oldvalue, Object newValue) {
-                spConversation.setVvalue((Double)newValue);  
-            }
-        });
         
         try {
             this.client.send("getOnlineUsers");
         } catch (IOException ex) {
             Logger.getLogger(WinMainController.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        }*/
         
-        // Open current conversation
-        if (this.currentConversation != "") openConversation(this.currentConversation);*/
     }
     
     private void loadUserPreview(User user, boolean unread) {
-        ArrayList<String> list = Message.getConversationUsers(this.currentConversation);
+        ArrayList<String> list = this.client.getConversationUsers(this.currentConversation);
         boolean current = false;
         for (String str : list) {
             if (str.equals(user.getUsername())) current = true;
@@ -175,14 +178,14 @@ public class WinMainController extends FXMLController {
         // Mouse events
         container.setOnMouseClicked((e)->{
             if (e.getButton() == MouseButton.SECONDARY) {
-                String conversation = Message.getConversationId(this.client.getUser().getUsername(), user.getUsername());
-                if (this.currentConversation.equals(conversation)) {
-                    this.currentConversation = "";
+                int conversation = this.client.getConversationId(this.client.getUser().getUsername(), user.getUsername());
+                if (this.currentConversation == conversation) {
+                    this.currentConversation = -1;
                     vbChat.setVisible(false);
                 }
                 this.client.removeConversation(conversation);
             } else {
-                this.currentConversation = Message.getConversationId(this.client.getUser().getUsername(), user.getUsername());
+                this.currentConversation = this.client.getConversationId(this.client.getUser().getUsername(), user.getUsername());
                 this.client.onConversationOpen(currentConversation);
                 init();
             }
@@ -193,7 +196,7 @@ public class WinMainController extends FXMLController {
         });
         
         container.setOnMouseExited((e)->{
-            ArrayList<String> _list = Message.getConversationUsers(this.currentConversation);
+            ArrayList<String> _list = this.client.getConversationUsers(this.currentConversation);
             boolean _current = false;
             for (String str : _list) {
                 if (str.equals(user.getUsername())) _current = true;
@@ -209,7 +212,7 @@ public class WinMainController extends FXMLController {
         vbUserList.getChildren().add(sep);
     }
     
-    public void loadConversation(String conversationId) {
+    public void loadConversation(int conversationId) {
         vbConversation.getChildren().clear();
         
         ArrayList<Message> messages = this.client.getConversationMessages(conversationId);
@@ -219,7 +222,7 @@ public class WinMainController extends FXMLController {
     }
     
     private void loadMessage(Message message) {
-            if (!message.getConversation().equals(this.currentConversation)) return;
+            if (message.getConversation() != this.currentConversation) return;
         
             // User
             String username = message.getFrom();
@@ -274,10 +277,10 @@ public class WinMainController extends FXMLController {
         return new Image("client/res/user_images/" + str);
     }
     
-    public void openConversation(String conversation) {
+    public void openConversation(int conversation) {
         this.currentConversation = conversation;
         
-        ArrayList<String> list = Message.getConversationUsers(conversation);
+        ArrayList<String> list = this.client.getConversationUsers(conversation);
         String name = "";
         for (String username : list) {
             if (!this.client.getUser().getUsername().equals(username)) {
@@ -306,12 +309,12 @@ public class WinMainController extends FXMLController {
         String[] args = new String[tokens.length-1];
         System.arraycopy(tokens, 1, args, 0, args.length);
             
-        if (cmd.equalsIgnoreCase("msg")) handleMessage(args[0]);
+        if (cmd.equalsIgnoreCase("msg")) handleMessage(Integer.valueOf(args[0]));
             else if (cmd.equalsIgnoreCase("online")) handleOnline(args[0]);
             else if (cmd.equalsIgnoreCase("offline")) handleOffline(args[0]);
     }
     
-    private void handleMessage(String id) {
+    private void handleMessage(int id) {
         Message msg = this.client.getMessageById(id);
         System.out.println("Message: " + msg.getBody());
         

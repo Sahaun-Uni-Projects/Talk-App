@@ -39,8 +39,8 @@ public class DBConnect {
     }
     
     public boolean update(String query) {
+        System.out.println("UPDATE :: " + query);
         try {
-            System.out.println("UPDATE :: " + query);
             statement = connection.createStatement();
             statement.executeUpdate(query);
             return true;
@@ -51,8 +51,8 @@ public class DBConnect {
      }
     
     public ResultSet query(String query) {
+        System.out.println("QUERY :: " + query);
         try {
-            System.out.println("QUERY :: " + query);
             statement = connection.createStatement();
             ResultSet resultset = statement.executeQuery(query);
             return resultset;            

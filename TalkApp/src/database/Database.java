@@ -1,5 +1,6 @@
 package database;
 
+import java.math.BigInteger;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.ResultSet;
@@ -34,9 +35,13 @@ public class Database {
     // ----- Checkers
     public boolean userExists(String username) {
         try {
+            this.con.connect();
             ResultSet res = this.con.query("SELECT * FROM users WHERE (username=\""+username+"\")");
             if (res.next()) return true;
+            this.con.connect();
         } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
         return false;
@@ -51,7 +56,6 @@ public class Database {
                str;
         ArrayList<String> friendsList = new ArrayList<>();
         ArrayList<String> requestsList = new ArrayList<>();
-        JSONObject lastSeen = null;
         Timestamp birthday = null;
         
         try {
@@ -83,7 +87,28 @@ public class Database {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        return new User(username, fullName, password, image, birthday, friendsList, requestsList, lastSeen);
+        return new User(username, fullName, password, image, birthday, friendsList, requestsList);
+    }
+    
+    public Timestamp getUserLastSeen(String name, BigInteger conversation) {
+        Timestamp lastSeen = null;
+        
+        try {
+            this.con.connect();
+            
+            ResultSet res = this.con.query("SELECT * FROM conversation_viewer WHERE ((" + pair("username",name) + ") or (" + pair("channel",conversation.toString()) + "))");
+            if (res.next()) {
+                lastSeen = Timestamp.valueOf(res.getString("last_seen"));
+            }
+            
+            this.con.disconnect();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return lastSeen;
     }
     
     public ArrayList<String> getFriends(String name) {
@@ -110,57 +135,106 @@ public class Database {
         return friendsList;
     }
     
-    public Message getMessage(String id) {
+    
+    public int getConversationId(String user1, String user2) {
+        int id = -1;
+        
+        try {
+            this.con.connect();
+            
+            ResultSet res = this.con.query("SELECT * FROM channels WHERE (((" + pair("user1",user1) + ") and (" + pair("user2",user2) + ")) or ((" + pair("user1",user2) + ") and (" + pair("user2",user1) + ")))");
+            if (res.next()) {
+                id = res.getInt("id");
+            }
+            
+            this.con.disconnect();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return id;
+    }
+    
+    public Message getMessage(int id) {
         String from = "",
-               conversation = "",
                body = "";
+        int conversation = -1;
         Timestamp time = new Timestamp(System.currentTimeMillis());
         
         try {
-            ResultSet res = this.con.query("SELECT * FROM `messages` WHERE ("+pair("id",id)+")");
+            this.con.connect();
+            ResultSet res = this.con.query("SELECT * FROM messages_ WHERE ("+pair("id",String.valueOf(id))+")");
             if (!res.next()) return null;
-            from = res.getString("from_user");
-            conversation = res.getString("to_conversation");
-            time = Timestamp.valueOf(res.getString("time"));
-            body = res.getString("body");
+            from = res.getString("username");
+            conversation = Integer.valueOf(res.getString("channel"));
+            time = Timestamp.valueOf(res.getString("date_"));
+            body = res.getString("msg");
+            this.con.disconnect();
         } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return new Message(from, conversation, time, body);
     }
     
-    public ArrayList<String> getConversationMessageIds(String id) {
-        ArrayList<String> list = new ArrayList<>();
+    public ArrayList<Integer> getConversationMessageIds(int id) {
+        ArrayList<Integer> list = new ArrayList<>();
         
         try {
-            ResultSet res = this.con.query("SELECT * FROM `conversations` WHERE ("+pair("id",id)+")");
-            if (!res.next()) return list;
-            Collections.addAll(list, res.getString("messages").split(",[ ]*"));
+            this.con.connect();
+            
+            ResultSet res = this.con.query("SELECT * FROM messages_ WHERE ("+pair("channel",String.valueOf(id))+")");
+            while (res.next()) {
+                list.add(Integer.valueOf(res.getString("id")));
+            }
+            
+            this.con.disconnect();
         } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
         
         return list;
     }
     
-    public void conversationOpen(String username, String conversation) {
-        JSONObject lastSeen = getUser(username).getLastSeen();
-        String time = (new Timestamp(System.currentTimeMillis())).toString();
-        lastSeen.put(conversation, time);
-        String json = lastSeen.toString().replace("\"", "\\\"");
-        this.con.update("UPDATE `users` SET `conversation_last_opened`="+stringify(json)+" WHERE `username`="+stringify(username));
+    public void conversationOpen(String username, int conversation) {
+        try {
+            this.con.connect();
+            
+            User user = getUser(username);
+            String vals = "date_=" + getCurrentTimestamp().toString();
+            System.out.println("QQQQ :: " + "UPDATE conversation_viewer SET " + vals + " WHERE ((" + pair("username",username) + ") and (" + pair("channel",String.valueOf(conversation)) + "))");
+            //this.con.update("UPDATE conversation_viewer SET " + vals + " WHERE ((" + pair("username",username) + ") and (" + pair("channel",String.valueOf(conversation)) + "))");
+            
+            this.con.disconnect();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return;
     }
     
-    public void conversationClose(String username, String conversation) {
-        JSONObject lastSeen = getUser(username).getLastSeen();
+    public void conversationClose(String username, int conversation) {
+        return;
+        
+        /*JSONObject lastSeen = getUser(username).getLastSeen();
         if (lastSeen.containsKey(conversation)) lastSeen.remove(conversation);
         String json = lastSeen.toString().replace("\"", "\\\"");
         this.con.update("UPDATE `users` SET `conversation_last_opened`="+stringify(json)+" WHERE `username`="+stringify(username));
+        */
     }
     
     public boolean conversationIsUnread(String username, String conversation) {
-        Timestamp lastMessage = Timestamp.valueOf("1980-01-01 10:00:00"),
+        return false;
+        
+        /*Timestamp lastMessage = Timestamp.valueOf("1980-01-01 10:00:00"),
                   lastSeen    = Timestamp.valueOf("1980-01-02 10:00:00");
         
         ArrayList<String> list = getConversationMessageIds(conversation);
@@ -183,7 +257,7 @@ public class Database {
         }
         
         System.out.println(username + " " + conversation + " " + lastSeen + " " + lastMessage);
-        return lastSeen.before(lastMessage);
+        return lastSeen.before(lastMessage);*/
     }
     
     // ----- Modifiers
@@ -221,10 +295,7 @@ public class Database {
             vals += ","; vals += "pass=" + stringify(user.getPassword());
             vals += ","; vals += "image_name=" + stringify(user.getPicture());
             vals += ","; vals += "birthday=" + stringify(user.getBirthday().toString());
-            //vals += ","; vals += "`friends_list`=" + stringify(user.getFriends());
-            //vals += ","; vals += "`friends_pending`=" + stringify(user.getRequests());
-            //vals += ","; vals += "`conversation_last_opened`=" + stringify(user.getLastSeen().toString().replace("\"", "\\\""));
-            System.out.println("CMD :: " + "UPDATE `users` SET " + vals + " WHERE `username`=" + stringify(user.getUsername()));
+            System.out.println("CMD :: " + "UPDATE users SET " + vals + " WHERE username=" + stringify(user.getUsername()));
             this.con.update("UPDATE users SET " + vals + " WHERE username=" + stringify(user.getUsername()));
             
             this.con.disconnect();
@@ -263,7 +334,9 @@ public class Database {
     }
     
     public void removeFriend(String from, String to) {
-        String conversation = Message.getConversationId(from, to);
+        return;
+        
+        /*String conversation = Message.getConversationId(from, to);
                 
         User user;
         ArrayList<String> list;
@@ -282,58 +355,48 @@ public class Database {
         if (list.contains(from)) list.remove(from);
         if (lastSeen.containsKey(conversation)) lastSeen.remove(conversation);
         updateUser(user);
+*/
     }
     
-    public void registerConversation(String conversationId) {
-        String vals = stringify(conversationId);
-        vals += ",";
-        vals += stringify("");
-        this.con.update("INSERT INTO `conversations`(`id`, `messages`) VALUES ("+vals+")");
+    public void registerConversation(String user1, String user2) {
+        String vals = user1;
+        vals += ","; vals += user2;
+        vals += ","; vals += getCurrentTimestamp().toString();
+        this.con.update("INSERT INTO channels VALUES ("+vals+")");
     }
     
-    private void addToConversation(String conversation_id, String message_id) {
-        try {
-            ResultSet res = this.con.query("SELECT * FROM `conversations` WHERE ("+pair("id",conversation_id)+")");
-            if (!res.next()) return;
-            
-            String msg = res.getString("messages");
-            if (!msg.isEmpty()) msg += ",";
-            msg += message_id;
-            msg = stringify(msg);
-            
-            this.con.update("UPDATE `conversations` SET `messages`=" + msg + "WHERE ("+pair("id",conversation_id)+")");
-        } catch (SQLException ex) {
-            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
-        }
-    }
-    
-    public String registerMessage(String from, String conversation, String body) {
-        String id = "";
+    public int registerMessage(String from, int conversation, String body) {
+        int msg_id = -1;
         ResultSet res;
         
         try {
-            while (true) {
-                id = UUID.randomUUID().toString();
-                res = this.con.query("SELECT * FROM `messages` WHERE ("+pair("id",id)+")");
-                if (!res.next()) break;
+            this.con.connect();
+            
+            for (int i = 0; i < 1000; ++i) {
+                res = this.con.query("SELECT * from messages_ where(" + pair("id",String.valueOf(i)) + ")");
+                if (!res.next()) {
+                    msg_id = i;
+                    break;
+                }
             }
             
-            String time = (new Timestamp(System.currentTimeMillis())).toString();
-            String vals = stringify(id);
-            vals += ","; vals += stringify(from);
-            vals += ","; vals += stringify(conversation);
-            vals += ","; vals += stringify(time);
+            String vals = stringify(from);
+            vals += ","; vals += stringify(String.valueOf(conversation));
             vals += ","; vals += stringify(body);
+            vals += ","; vals += stringify(getCurrentTimestamp().toString());
             
-            this.con.update("INSERT INTO `messages`(`id`, `from_user`, `to_conversation`, `time`, `body`) VALUES ("+vals+")");
+            this.con.update("INSERT INTO messages_ VALUES ("+vals+")");
+            this.con.disconnect();
         } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (ClassNotFoundException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
         
-        registerConversation(conversation);
-        addToConversation(conversation, id);
+        //registerConversation(conversation);
+        //addToConversation(conversation, id);
         
-        return id;
+        return msg_id;
     }
     
     private String stringify(String str) {
@@ -342,5 +405,31 @@ public class Database {
     
     private String pair(String key, String value) {
         return (key + "=" + stringify(value));
+    }
+    
+    private Timestamp getCurrentTimestamp() {
+        return (new Timestamp(System.currentTimeMillis()));
+    }
+
+    public ArrayList<String> getConversationUsers(int conversation) {
+        ArrayList<String> users = new ArrayList<>();
+        
+        try {
+            this.con.connect();
+            
+            ResultSet res = this.con.query("SELECT * from channels where(" + pair("id", String.valueOf(conversation)) + ")");
+            if (res.next()) {
+                users.add(res.getString("user1"));
+                users.add(res.getString("user2"));
+            }
+            
+            this.con.disconnect();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return users;
     }
 }

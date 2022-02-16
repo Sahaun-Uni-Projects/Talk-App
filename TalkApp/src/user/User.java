@@ -14,7 +14,6 @@ public class User {
     private Client client;    
     private String name, username, password, picture;
     private Timestamp birthday;
-    private JSONObject lastSeen;
     private ArrayList<String> friendsList = new ArrayList<String>();
     private ArrayList<String> requestsList = new ArrayList<String>();
     
@@ -33,11 +32,10 @@ public class User {
         this.lastSeen = lastSeen;
     }*/
     
-    public User(String username, String name, String password, String picture, Timestamp birthday, ArrayList<String> friendsList, ArrayList<String> requestsList, JSONObject lastSeen) {
+    public User(String username, String name, String password, String picture, Timestamp birthday, ArrayList<String> friendsList, ArrayList<String> requestsList) {
         this(username, name, password, picture, birthday);
         this.friendsList = friendsList;
         this.requestsList = requestsList;
-        this.lastSeen = lastSeen;
     }
     
     public void setName(String name) {
@@ -126,13 +124,5 @@ public class User {
         String requests = list.get(0);
         for (int i = 1; i < list.size(); ++i) requests += "," + list.get(i);
         return requests;
-    }
-    
-    public void setLastSeen(JSONObject lastSeen) {
-        this.lastSeen = lastSeen;
-    }
-    
-    public JSONObject getLastSeen() {
-        return this.lastSeen;
     }
 }

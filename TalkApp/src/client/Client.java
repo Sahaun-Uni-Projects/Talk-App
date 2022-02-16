@@ -70,16 +70,17 @@ public class Client {
         return this.db.getUser(name);
     }
     
-    public ArrayList<String> getConversationMessageIds(String conversationId) {
+    public ArrayList<Integer> getConversationMessageIds(int conversationId) {
         return this.db.getConversationMessageIds(conversationId);
     }
     
-    public ArrayList<Message> getConversationMessages(String conversationId) {
-        ArrayList<String> ids = this.db.getConversationMessageIds(conversationId);
+    public ArrayList<Message> getConversationMessages(int conversationId) {
+        ArrayList<Integer> ids = this.db.getConversationMessageIds(conversationId);
         ArrayList<Message> list = new ArrayList<>();
         
-        for (String id : ids) {
+        for (int id : ids) {
             Message msg = this.db.getMessage(id);
+            System.out.println(conversationId + " :: " + msg.getBody());
             //msg.fixNewLines();
             list.add(msg);
         }
@@ -87,15 +88,15 @@ public class Client {
         return list;
     }
     
-    public Message getMessageById(String id) {
+    public Message getMessageById(int id) {
         //message.fixNewLines();
         //System.out.println("Recieved: " + message);
         return this.db.getMessage(id);
     }
     
-    public void onConversationOpen(String id) {
+    public void onConversationOpen(int id) {
         this.db.conversationOpen(this.user.getUsername(), id);
-        //setUser(this.user.getUsername());
+        setUser(this.user.getUsername());
     }
     
     public boolean conversationIsUnread(String id) {
@@ -149,7 +150,7 @@ public class Client {
         }
     }
     
-    public void removeConversation(String conversation) {
+    public void removeConversation(int conversation) {
         this.db.conversationClose(this.user.getUsername(), conversation);
         setUser(this.user.getUsername());
         WinMainController controller = (WinMainController) this.window.getController();
@@ -194,7 +195,7 @@ public class Client {
     }
     
     public void openConversation(String username) {
-        String id = Message.getConversationId(this.user.getUsername(), username);
+        int id = this.db.getConversationId(this.user.getUsername(), username);
         onConversationOpen(id);
         setUser(this.user.getUsername());
         
@@ -260,10 +261,10 @@ public class Client {
         }
     }
     
-    public void sendMessage(String conversation, String body) {
-        String id = this.db.registerMessage(this.user.getUsername(), conversation, body);
+    public void sendMessage(int conversation, String body) {
+        int id = this.db.registerMessage(this.user.getUsername(), conversation, body);
         try {
-            send("msg " + id);
+            send("msg " + String.valueOf(id));
         } catch (IOException ex) {
             Logger.getLogger(Client.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -333,7 +334,7 @@ public class Client {
     }
     
     private void handleMessage(String[] args) {
-        String id = args[0];
+        int id = Integer.valueOf(args[0]);
         Message message = this.db.getMessage(id);
         
         System.out.println("Received:: " + message.getBody());
@@ -353,5 +354,13 @@ public class Client {
         }
         this.window.close();
         Client client = new Client(this.serverName, this.serverPort);
+    }
+
+    public ArrayList<String> getConversationUsers(int conversation) {
+        return this.db.getConversationUsers(conversation);
+    }
+
+    public int getConversationId(String user1, String user2) {
+        return this.db.getConversationId(user1, user2);
     }
 }
