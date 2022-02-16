@@ -91,7 +91,7 @@ public class WinMainController extends FXMLController {
         imgUserDP.setImage(getImage(user.getPicture()));
         txtUsername.setText(user.getUsername());
         
-        ArrayList<String> friendsList = new ArrayList<>();
+        /*ArrayList<String> friendsList = new ArrayList<>();
         Set keys = user.getLastSeen().keySet();
         for (Object key : keys) {
             String conversation = (String) key;
@@ -130,7 +130,7 @@ public class WinMainController extends FXMLController {
         }
         
         // Open current conversation
-        if (this.currentConversation != "") openConversation(this.currentConversation);
+        if (this.currentConversation != "") openConversation(this.currentConversation);*/
     }
     
     private void loadUserPreview(User user, boolean unread) {

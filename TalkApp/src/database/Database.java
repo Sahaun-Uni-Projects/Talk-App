@@ -20,19 +20,21 @@ import user.User;
  * @author Sahaun
  */
 public class Database {
-    private DBConnector con;
+    private DBConnect con;
     
     public Database() {
-        this.con = new DBConnector("root", "", "talk_db", "localhost:3306");
+        this.con = new DBConnect();
+        
+        /*this.con = new DBConnector("root", "", "talk_db", "localhost:3306");
         System.out.print("Database connecting through DBConnector... ");
         if (this.con.connect()) System.out.println("success");
-            else System.out.println("failed");
+            else System.out.println("failed");*/
     }
     
     // ----- Checkers
     public boolean userExists(String username) {
         try {
-            ResultSet res = this.con.query("SELECT * FROM `users` WHERE (username=\""+username+"\")");
+            ResultSet res = this.con.query("SELECT * FROM users WHERE (username=\""+username+"\")");
             if (res.next()) return true;
         } catch (SQLException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
@@ -53,21 +55,28 @@ public class Database {
         Timestamp birthday = null;
         
         try {
-            ResultSet res = this.con.query("SELECT * FROM `users` WHERE (username=\""+name+"\")");
+            this.con.connect();
+            
+            ResultSet res = this.con.query("SELECT * FROM users WHERE (username='"+name+"')");
             if (!res.next()) return null;
             username = res.getString("username");
             fullName = res.getString("name");
-            password = res.getString("password");
+            password = res.getString("pass");
             image = res.getString("image_name");
             birthday = Timestamp.valueOf(res.getString("birthday"));
+            friendsList = getFriends(username);
+            friendsList.forEach(value -> System.out.print(value));
+
             
-            str = res.getString("friends_list");
+            /*str = res.getString("friends_list");
             if (!str.isEmpty()) Collections.addAll(friendsList, str.split(",[ ]*"));
             
             str = res.getString("friends_pending");
             if (!str.isEmpty()) Collections.addAll(requestsList, str.split(",[ ]*"));
             
-            lastSeen = (JSONObject) new JSONParser().parse(res.getString("conversation_last_opened"));
+            lastSeen = (JSONObject) new JSONParser().parse(res.getString("conversation_last_opened"));*/
+            
+            this.con.disconnect();
         } catch (SQLException ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         } catch (Exception ex) {
@@ -75,6 +84,30 @@ public class Database {
         }
         
         return new User(username, fullName, password, image, birthday, friendsList, requestsList, lastSeen);
+    }
+    
+    public ArrayList<String> getFriends(String name) {
+        ArrayList<String> friendsList = new ArrayList<>();
+        
+        try {
+            this.con.connect();
+            
+            ResultSet res = this.con.query("SELECT * FROM friendships WHERE ((" + pair("user1",name) + ") or (" + pair("user2",name) + "))");
+            while (res.next()) {
+                String u1 = res.getString("user1");
+                String u2 = res.getString("user2");
+                friendsList.add(u1.equals(name) ? u2 : u1);
+                System.out.println(res.getString("user1") + " " + res.getString("user2"));
+            }
+            
+            this.con.disconnect();
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (SQLException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        return friendsList;
     }
     
     public Message getMessage(String id) {
@@ -115,23 +148,15 @@ public class Database {
         JSONObject lastSeen = getUser(username).getLastSeen();
         String time = (new Timestamp(System.currentTimeMillis())).toString();
         lastSeen.put(conversation, time);
-        try {
-            String json = lastSeen.toString().replace("\"", "\\\"");
-            this.con.update("UPDATE `users` SET `conversation_last_opened`="+stringify(json)+" WHERE `username`="+stringify(username));
-        } catch (SQLException ex) {
-            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        String json = lastSeen.toString().replace("\"", "\\\"");
+        this.con.update("UPDATE `users` SET `conversation_last_opened`="+stringify(json)+" WHERE `username`="+stringify(username));
     }
     
     public void conversationClose(String username, String conversation) {
         JSONObject lastSeen = getUser(username).getLastSeen();
         if (lastSeen.containsKey(conversation)) lastSeen.remove(conversation);
-        try {
-            String json = lastSeen.toString().replace("\"", "\\\"");
-            this.con.update("UPDATE `users` SET `conversation_last_opened`="+stringify(json)+" WHERE `username`="+stringify(username));
-        } catch (SQLException ex) {
-            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        String json = lastSeen.toString().replace("\"", "\\\"");
+        this.con.update("UPDATE `users` SET `conversation_last_opened`="+stringify(json)+" WHERE `username`="+stringify(username));
     }
     
     public boolean conversationIsUnread(String username, String conversation) {
@@ -164,16 +189,25 @@ public class Database {
     // ----- Modifiers
     public boolean registerUser(User user) {
         try {
+            this.con.connect();
+            
             String vals = stringify(user.getUsername());
             vals += ","; vals += stringify(user.getName());
             vals += ","; vals += stringify(user.getPassword());
             vals += ","; vals += stringify(user.getPicture());
             vals += ","; vals += stringify(user.getBirthday().toString());
-            this.con.update("INSERT INTO `users`(`username`, `name`, `password`, `image_name`, `birthday`) VALUES (" + vals + ")");
+            vals += ","; vals += "null";
+            this.con.update("INSERT INTO users(username, name, pass, image_name, birthday, last_seen) VALUES (" + vals + ")");
+            
+            this.con.disconnect();
+            
             return true;
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         } catch (SQLException ex) {
             Logger.getLogger(Database.class.getName()).log(Level.SEVERE, null, ex);
         }
+        
         return false;
     }
     
@@ -181,17 +215,19 @@ public class Database {
         String username = user.getUsername();
         
         try {
-            String vals = "`name`=" + stringify(user.getName());
-            vals += ","; vals += "`password`=" + stringify(user.getPassword());
-            vals += ","; vals += "`image_name`=" + stringify(user.getPicture());
-            vals += ","; vals += "`birthday`=" + stringify(user.getBirthday().toString());
-            vals += ","; vals += "`friends_list`=" + stringify(user.getFriends());
-            vals += ","; vals += "`friends_pending`=" + stringify(user.getRequests());
-            vals += ","; vals += "`conversation_last_opened`=" + stringify(user.getLastSeen().toString().replace("\"", "\\\""));
+            this.con.connect();
+            
+            String vals = "name=" + stringify(user.getName());
+            vals += ","; vals += "pass=" + stringify(user.getPassword());
+            vals += ","; vals += "image_name=" + stringify(user.getPicture());
+            vals += ","; vals += "birthday=" + stringify(user.getBirthday().toString());
+            //vals += ","; vals += "`friends_list`=" + stringify(user.getFriends());
+            //vals += ","; vals += "`friends_pending`=" + stringify(user.getRequests());
+            //vals += ","; vals += "`conversation_last_opened`=" + stringify(user.getLastSeen().toString().replace("\"", "\\\""));
             System.out.println("CMD :: " + "UPDATE `users` SET " + vals + " WHERE `username`=" + stringify(user.getUsername()));
-            this.con.update("UPDATE `users` SET " + vals + " WHERE `username`=" + stringify(user.getUsername()));
-        } catch (SQLException ex) {
-            Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
+            this.con.update("UPDATE users SET " + vals + " WHERE username=" + stringify(user.getUsername()));
+            
+            this.con.disconnect();
         } catch (Exception ex) {
             Logger.getLogger(ServerWorker.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -249,13 +285,10 @@ public class Database {
     }
     
     public void registerConversation(String conversationId) {
-        try {
-            String vals = stringify(conversationId);
-            vals += ","; vals += stringify("");
-            this.con.update("INSERT INTO `conversations`(`id`, `messages`) VALUES ("+vals+")");
-        } catch (SQLException ex) {
-            System.out.println("Conversation \"" + conversationId + "\" is already registered.");
-        }
+        String vals = stringify(conversationId);
+        vals += ",";
+        vals += stringify("");
+        this.con.update("INSERT INTO `conversations`(`id`, `messages`) VALUES ("+vals+")");
     }
     
     private void addToConversation(String conversation_id, String message_id) {
@@ -304,7 +337,7 @@ public class Database {
     }
     
     private String stringify(String str) {
-        return ("\"" + str + "\"");
+        return ("'" + str + "'");
     }
     
     private String pair(String key, String value) {

@@ -26,6 +26,13 @@ public class User {
         this.birthday = birthday;
     }
     
+    /**public User(String username, String name, String password, String picture, Timestamp birthday, ArrayList<String> friendsList, ArrayList<String> requestsList, JSONObject lastSeen) {
+        this(username, name, password, picture, birthday);
+        this.friendsList = friendsList;
+        this.requestsList = requestsList;
+        this.lastSeen = lastSeen;
+    }*/
+    
     public User(String username, String name, String password, String picture, Timestamp birthday, ArrayList<String> friendsList, ArrayList<String> requestsList, JSONObject lastSeen) {
         this(username, name, password, picture, birthday);
         this.friendsList = friendsList;
