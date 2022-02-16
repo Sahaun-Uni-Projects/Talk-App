@@ -207,9 +207,9 @@ public class Database {
             this.con.connect();
             
             User user = getUser(username);
-            String vals = "date_=" + getCurrentTimestamp().toString();
+            String vals = "date_=" + stringify(getCurrentTimestamp().toString());
             System.out.println("QQQQ :: " + "UPDATE conversation_viewer SET " + vals + " WHERE ((" + pair("username",username) + ") and (" + pair("channel",String.valueOf(conversation)) + "))");
-            //this.con.update("UPDATE conversation_viewer SET " + vals + " WHERE ((" + pair("username",username) + ") and (" + pair("channel",String.valueOf(conversation)) + "))");
+            this.con.update("UPDATE conversation_viewer SET " + vals + " WHERE ((" + pair("username",username) + ") and (" + pair("channel",String.valueOf(conversation)) + "))");
             
             this.con.disconnect();
         } catch (ClassNotFoundException ex) {
@@ -372,7 +372,7 @@ public class Database {
         try {
             this.con.connect();
             
-            for (int i = 0; i < 1000; ++i) {
+            for (int i = 0; i < 100; ++i) {
                 res = this.con.query("SELECT * from messages_ where(" + pair("id",String.valueOf(i)) + ")");
                 if (!res.next()) {
                     msg_id = i;
@@ -394,7 +394,6 @@ public class Database {
         }
         
         //registerConversation(conversation);
-        //addToConversation(conversation, id);
         
         return msg_id;
     }

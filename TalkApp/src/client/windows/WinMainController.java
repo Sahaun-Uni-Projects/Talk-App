@@ -113,6 +113,13 @@ public class WinMainController extends FXMLController {
         // Open current conversation
         if (this.currentConversation != -1) openConversation(this.currentConversation);
         
+        try {
+            this.client.send("getOnlineUsers");
+        } catch (IOException ex) {
+            Logger.getLogger(WinMainController.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        
         /*ArrayList<String> friendsList = new ArrayList<>();
         Set keys = user.getLastSeen().keySet();
         for (Object key : keys) {
