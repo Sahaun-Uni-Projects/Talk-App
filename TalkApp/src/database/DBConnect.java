@@ -18,7 +18,7 @@ public class DBConnect {
     
     public void connect() throws ClassNotFoundException, SQLException {        
         Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-        String connectionUrl = "jdbc:sqlserver://localhost:1433;user=sa;password=p@ssword13;databaseName=DBConnectionTest";
+        String connectionUrl = "jdbc:sqlserver://localhost:1433;user=sa;password=p@ssword13;databaseName=TalkDB";
         connection = DriverManager.getConnection(connectionUrl);
         statement = connection.createStatement();
         statement.executeUpdate("USE TalkDB");
